@@ -3,48 +3,36 @@
 
 #include <iostream>
 #include <vector>
+#include "some_func.h"
+
+enum Direction
+{
+    Absolute,
+    Forward,
+    Backward,
+    Presence
+};
+
+enum Sig_errors
+{
+    Offset,
+    Exp,
+    Estw,
+    Good
+};
 
 class Signature
 {
 public:
-    Signature(std::vector<std::string> &s) : sig_error(false)
-    {
-        std::string offs, se, est_wt;
-        offs = s[0];
-        est_wt = s[2];
-        try
-        {
-            offset = std::stoull(offs);
-        }
-        catch(std::invalid_argument)
-        {
-            std::cout << "Offset in signature wrong!\n";
-            sig_error = true;
-        }
-        catch(std::out_of_range)
-        {
-            std::cout << "Offset in signature wrong!\n";
-            sig_error = true;
-        }
-        try
-        {
-            est_wght = std::stoi(est_wt);
-        }
-        catch(std::invalid_argument)
-        {
-            std::cout << "Estimated weight in signature wrong!\n";
-            sig_error = true;
-        }
-        catch(std::out_of_range)
-        {
-            std::cout << "Estimated weight in signature wrong!\n";
-            sig_error = true;
-        }
-        srch_expr = se;
-    }
+    Signature(std::vector<std::string> &s, char *tb);
     long long offset;
     std::string srch_expr;
     int est_wght;
-    bool sig_error;
+    Direction direction;
+    Sig_errors sig_err;
+    bool invert;
+private:
+    std::string pars_gen(std::string, char *);
+    std::string pars_offs(std::string, char *);
 };
 #endif // SIGNATURE_H

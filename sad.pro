@@ -6,6 +6,7 @@ CONFIG -= qt
 SOURCES += \
         main.cpp \
         sad.cpp \
+        signature.cpp \
         some_func.cpp
 
 HEADERS += \

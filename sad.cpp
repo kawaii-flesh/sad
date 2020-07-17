@@ -57,7 +57,7 @@ int SAD::get_signatures()
             sb += sf_b[cur_pos];
         std::vector<std::string> svb;
         strip(sb, ":", svb);
-        Signature sig(svb);
+        Signature sig(svb, tf_buff);
         signatures.push_back(sig);
     }
     return 0;

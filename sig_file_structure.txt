@@ -4,7 +4,7 @@
 }
 
 (1)      (2)       (3)
- 0: 0xff,0xde,0x02: 1
+ 0: 0xff,0xde,0x02: 1;
 
 1) offset in file
 ! - invert result
@@ -20,7 +20,7 @@ d - 4b
 q - 8b
 L - little endian
 B - big endian
-Example: [0]dL:0xff:1 - get 4 bytes in order little endian and use it as new offset
+Example: [0]dL:0xff:1; - get 4 bytes in order little endian and use it as new offset
 
 2) Search exp
 

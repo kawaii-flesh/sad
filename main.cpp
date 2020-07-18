@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
             return 1;
         }
         sad.get_signatures();
+        cout << sad.check_sig() << "% similarity\n";
         return 0;
     }
 }

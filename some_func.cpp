@@ -15,25 +15,25 @@ void strip(std::string str, std::string sym, std::vector<std::string> &sl)
     }
 }
 
-unsigned long long s2n(std::string str)
+long long s2n(std::string str)
 {
-    unsigned long long n{};
+    long long n{};
     if(str.find('x') != std::string::npos)
     {
-        n = std::stoull(str, 0,16);
+        n = std::stoll(str, 0,16);
         str.erase(str.find('x'), 1);
     }
     else if(str.find('o') != std::string::npos)
     {
-        n = std::stoull(str, 0, 8);
+        n = std::stoll(str, 0, 8);
         str.erase(str.find('o'), 1);
     }
     else if(str.find('b') != std::string::npos)
     {
-        n = std::stoull(str, 0, 2);
+        n = std::stoll(str, 0, 2);
         str.erase(str.find('b'), 1);
     }
     else
-        n = std::stoull(str, 0);
+        n = std::stoll(str, 0);
     return n;
 }

@@ -1,24 +1,10 @@
 #include "signature.h"
 
-Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Direction::Absolute), sig_err(Sig_errors::Good), invert(false)
+Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Direction::Absolute), sig_err(Sig_errors::Good), invert(false), target_bf(tb)
 {
-    std::string offs, se, est_wt;
-    offs = pars_offs(s[0], tb);
+    std::string est_wt;
+    offset = s[0];
     est_wt = s[2];
-    try
-    {
-        offset = std::stoull(offs);
-    }
-    catch(std::invalid_argument)
-    {
-        std::cout << "Offset in signature wrong!\n";
-        sig_err = Sig_errors::Offset;
-    }
-    catch(std::out_of_range)
-    {
-        std::cout << "Offset in signature wrong!\n";
-        sig_err = Sig_errors::Offset;
-    }
     try
     {
         est_wght = std::stoi(est_wt);
@@ -33,16 +19,15 @@ Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Directio
         std::cout << "Estimated weight in signature wrong!\n";
         sig_err = Sig_errors::Estw;
     }
-    srch_expr = se;
+    srch_expr = s[1];
 }
 
 std::string Signature::pars_gen(std::string str, char *tb)
 {
-    size_t p;
-    p = str.find('[');
+    size_t p = str.find('[');
     if(p != std::string::npos)
     {
-        unsigned long long e = str.find(']');
+        long long e = str.find(']');
         if(e == std::string::npos)
         {
             sig_err = Sig_errors::Offset;
@@ -50,7 +35,7 @@ std::string Signature::pars_gen(std::string str, char *tb)
         }
         str.replace(p, e + 1, str.substr(p + 1, e - 1));
         int size_r{1};
-        unsigned long long off{};
+        long long off{};
         bool endian{false}; // false - little, true - big
         try
         {
@@ -95,13 +80,13 @@ std::string Signature::pars_gen(std::string str, char *tb)
         }
         catch(std::invalid_argument)
         {
-            std::cout << "Offset value wrong!\n";
+            std::cout << "Value wrong!\n";
             sig_err = Sig_errors::Offset;
             return str;
         }
         catch(std::out_of_range)
         {
-            std::cout << "Offset value wrong!\n";
+            std::cout << "Value wrong!\n";
             sig_err = Sig_errors::Offset;
             return str;
         }
@@ -137,9 +122,9 @@ std::string Signature::pars_gen(std::string str, char *tb)
     return str;
 }
 
-std::string Signature::pars_offs(std::string str, char *tb)
+std::string Signature::pars_offset(std::string str, char *tb)
 {
-    unsigned long long p = str.find('!');
+    long long p = str.find('!');
     if(p != std::string::npos)
     {
         str.erase(p, 1);
@@ -169,6 +154,9 @@ std::string Signature::pars_offs(std::string str, char *tb)
         str.erase(p, 1);
         direction = Direction::Presence;
     }
-    str = pars_gen(str, tb);
-    return str;
+    if(direction != Direction::Absolute)
+    {
+        return "0";
+    }
+    return pars_gen(str, tb);
 }

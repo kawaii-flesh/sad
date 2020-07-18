@@ -25,14 +25,15 @@ class Signature
 {
 public:
     Signature(std::vector<std::string> &s, char *tb);
-    long long offset;
+    std::string offset;
     std::string srch_expr;
     int est_wght;
     Direction direction;
     Sig_errors sig_err;
     bool invert;
-private:
+    char *target_bf;
+
     std::string pars_gen(std::string, char *);
-    std::string pars_offs(std::string, char *);
+    std::string pars_offset(std::string, char *);
 };
 #endif // SIGNATURE_H

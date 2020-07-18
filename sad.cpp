@@ -1,6 +1,6 @@
 #include "sad.h"
 
-SAD::SAD(std::string sig_fn, std::string tar_n, std::string sig) : sad_error(false), sf_buff(nullptr), tf_buff(nullptr), tf_pos(0), sig_nm(sig)
+SAD::SAD(std::string sig_fn, std::string tar_n, std::string sig) : sad_error(false), sf_buff(nullptr), tf_buff(nullptr), tf_pos(0), tf_pos_old(0), sig_nm(sig)
 {
     sig_file.open(sig_fn, std::ios::binary);
     if(!sig_file.is_open())
@@ -9,7 +9,7 @@ SAD::SAD(std::string sig_fn, std::string tar_n, std::string sig) : sad_error(fal
         sad_error = true;
         return;
     }
-    unsigned long long sf_size = sig_file.seekg(0, std::ios::end).tellg();
+    long long sf_size = sig_file.seekg(0, std::ios::end).tellg();
     sig_file.seekg(0);
     sf_buff = new char[sf_size+1];
     sig_file.read(sf_buff, sf_size);
@@ -36,12 +36,12 @@ SAD::~SAD()
 int SAD::get_signatures()
 {
     std::string sf_b(sf_buff);
-    unsigned long long cur_pos{0};
-    for(unsigned long long p = sf_b.find(' '); p != std::string::npos; p = sf_b.find(' '))
+    long long cur_pos{0};
+    for(long long p = sf_b.find(' '); p != std::string::npos; p = sf_b.find(' '))
         sf_b.erase(p, 1);
-    for(unsigned long long p = sf_b.find('\t'); p != std::string::npos; p = sf_b.find('\t'))
+    for(long long p = sf_b.find('\t'); p != std::string::npos; p = sf_b.find('\t'))
         sf_b.erase(p, 1);
-    for(unsigned long long p = sf_b.find('\n'); p != std::string::npos; p = sf_b.find('\n'))
+    for(long long p = sf_b.find('\n'); p != std::string::npos; p = sf_b.find('\n'))
         sf_b.erase(p, 1);
     cur_pos = sf_b.find('[' + sig_nm + ']');
     if(cur_pos == std::string::npos)
@@ -61,4 +61,107 @@ int SAD::get_signatures()
         signatures.push_back(sig);
     }
     return 0;
+}
+
+bool SAD::check_one_sig(Signature &s)
+{
+    std::vector<std::string> search_bytes;
+    strip(s.srch_expr, ",", search_bytes);
+    int result = 0;
+    if(s.direction == Direction::Absolute)
+    {
+        tf_pos = s2n(s.pars_offset(s.offset, s.target_bf));
+    }
+    else if(s.direction == Direction::Presence)
+    {
+        tf_pos = 0;
+    }
+    tf_pos_old = tf_pos;
+
+    if(s.direction == Direction::Absolute)
+    {
+        if(tf_pos + search_bytes.size() < tf_size)
+        {
+            for(std::string i : search_bytes)
+            {
+                if(tf_buff[tf_pos] == s2n(i))
+                    ++result;
+                ++tf_pos;
+            }
+        }
+    }
+    else if(s.direction == Direction::Presence)
+    {
+        for(long long i = 0; i + search_bytes.size() < tf_size; ++i)
+        {
+            long long k = 0;
+            result = 0;
+            for(std::string j : search_bytes)
+            {
+                if(tf_buff[tf_pos + k] == s2n(j))
+                    ++result;
+                ++k;
+            }
+            if(result == search_bytes.size())
+                break;
+            ++tf_pos;
+        }
+    }
+    else if(s.direction == Direction::Forward)
+    {
+        for(long long i = 0; i + search_bytes.size() < tf_size; ++i)
+        {
+            long long k = 0;
+            result = 0;
+            for(std::string j : search_bytes)
+            {
+                if(tf_buff[tf_pos + k] == s2n(j))
+                    ++result;
+                ++k;
+            }
+            if(result == search_bytes.size())
+                break;
+            ++tf_pos;
+        }
+    }
+    else if(s.direction == Direction::Backward)
+    {
+        for(long long i = tf_pos; i - search_bytes.size() >= 0; --i)
+        {
+            long long k = 0;
+            result = 0;
+            for(std::string j : search_bytes)
+            {
+                if(tf_buff[tf_pos + k] == s2n(j))
+                    ++result;
+                ++k;
+            }
+            if(result == search_bytes.size())
+                break;
+            --tf_pos;
+        }
+    }
+    bool r = false;
+    if(result == search_bytes.size())
+        r = true;
+    if(s.invert)
+        r = !r;
+    if(r == false || s.invert || s.direction == Direction::Presence)
+        tf_pos = tf_pos_old;
+    return r;
+}
+
+double SAD::check_sig()
+{
+    double total{};
+    double prcnt{};
+    for(Signature s : signatures)
+    {
+        total += s.est_wght;
+        if(check_one_sig(s))
+        {
+            prcnt += s.est_wght;
+        }
+    }
+    return prcnt * 100 / total;
 }

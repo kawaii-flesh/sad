@@ -1,8 +1,9 @@
 #include "signature.h"
 
-Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Direction::Absolute), sig_err(Sig_errors::Good), invert(false), target_bf(tb)
+Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Direction::Absolute), sig_err(Sig_errors::Good), invert(false), optional(false), target_bf(tb)
 {
     std::string est_wt;
+    get_offs_type(s[0]);
     offset = s[0];
     est_wt = s[2];
     try
@@ -20,6 +21,46 @@ Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Directio
         sig_err = Sig_errors::Estw;
     }
     srch_expr = s[1];
+}
+
+void Signature::get_offs_type(std::string &str)
+{
+    long long p = str.find('!');
+    if(p != std::string::npos)
+    {
+        str.erase(p, 1);
+        invert = true;
+    }
+    p = str.find('~');
+    if(p != std::string::npos)
+    {
+        str.erase(p, 1);
+        optional = true;
+    }
+    p = str.find('@');
+    if(p != std::string::npos)
+    {
+        str.erase(p, 1);
+        direction = Direction::Absolute;
+    }
+    p = str.find('-');
+    if(p != std::string::npos)
+    {
+        str.erase(p, 1);
+        direction = Direction::Backward;
+    }
+    p = str.find('+');
+    if(p != std::string::npos)
+    {
+        str.erase(p, 1);
+        direction = Direction::Forward;
+    }
+    p = str.find('?');
+    if(p != std::string::npos)
+    {
+        str.erase(p, 1);
+        direction = Direction::Presence;
+    }
 }
 
 std::string Signature::pars_gen(std::string str, char *tb)
@@ -123,37 +164,7 @@ std::string Signature::pars_gen(std::string str, char *tb)
 }
 
 std::string Signature::pars_offset(std::string str, char *tb)
-{
-    long long p = str.find('!');
-    if(p != std::string::npos)
-    {
-        str.erase(p, 1);
-        invert = true;
-    }
-    p = str.find('@');
-    if(p != std::string::npos)
-    {
-        str.erase(p, 1);
-        direction = Direction::Absolute;
-    }
-    p = str.find('<');
-    if(p != std::string::npos)
-    {
-        str.erase(p, 1);
-        direction = Direction::Backward;
-    }
-    p = str.find('>');
-    if(p != std::string::npos)
-    {
-        str.erase(p, 1);
-        direction = Direction::Forward;
-    }
-    p = str.find('?');
-    if(p != std::string::npos)
-    {
-        str.erase(p, 1);
-        direction = Direction::Presence;
-    }
+{    
     if(direction != Direction::Absolute)
     {
         return "0";

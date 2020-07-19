@@ -15,7 +15,7 @@ public:
     ~SAD();
     int get_signatures();
     bool check_one_sig(Signature &);
-    double check_sig(); // get %
+    double check_sig(); // get %    
     bool sad_error;
 private:
     std::ifstream sig_file;

@@ -29,21 +29,18 @@ SAD::SAD(std::string sig_fn, std::string tar_n, std::string sig) : sad_error(fal
 
 SAD::~SAD()
 {
-    delete sf_buff;
-    delete tf_buff;
+    delete [] sf_buff;
+    delete [] tf_buff;
+    sig_file.close();
+    tar_file.close();
 }
 
 int SAD::get_signatures()
 {
     std::string sf_b(sf_buff);
     long long cur_pos{0};
-    for(long long p = sf_b.find(' '); p != std::string::npos; p = sf_b.find(' '))
-        sf_b.erase(p, 1);
-    for(long long p = sf_b.find('\t'); p != std::string::npos; p = sf_b.find('\t'))
-        sf_b.erase(p, 1);
-    for(long long p = sf_b.find('\n'); p != std::string::npos; p = sf_b.find('\n'))
-        sf_b.erase(p, 1);
-    cur_pos = sf_b.find('[' + sig_nm + ']');
+    sf_b = delete_all_spaces(sf_b);
+    cur_pos = sf_b.find('<' + sig_nm + '>');
     if(cur_pos == std::string::npos)
     {
         std::cout << "Can't find sig container: " << sig_nm << "!\n";
@@ -54,7 +51,14 @@ int SAD::get_signatures()
     {
         std::string sb{};
         for(; sf_b[cur_pos] != ';'; ++cur_pos)
+        {
+            if(cur_pos >= sf_b.size())
+            {
+                std::cout << "Can't find ';'!\n";
+                return -1;
+            }
             sb += sf_b[cur_pos];
+        }
         std::vector<std::string> svb;
         strip(sb, ":", svb);
         Signature sig(svb, tf_buff);
@@ -68,15 +72,14 @@ bool SAD::check_one_sig(Signature &s)
     std::vector<std::string> search_bytes;
     strip(s.srch_expr, ",", search_bytes);
     int result = 0;
-    if(s.direction == Direction::Absolute)
-    {
-        tf_pos = s2n(s.pars_offset(s.offset, s.target_bf));
-    }
-    else if(s.direction == Direction::Presence)
-    {
-        tf_pos = 0;
-    }
+
     tf_pos_old = tf_pos;
+    if(s.direction == Direction::Absolute)
+        tf_pos = s2n(s.pars_offset(s.offset, s.target_bf));
+    if(s.direction == Direction::Forward || s.direction == Direction::Backward)
+        tf_pos = tf_pos_old;
+    if(s.direction == Direction::Presence)
+        tf_pos = 0;
 
     if(s.direction == Direction::Absolute)
     {
@@ -84,7 +87,7 @@ bool SAD::check_one_sig(Signature &s)
         {
             for(std::string i : search_bytes)
             {
-                if(tf_buff[tf_pos] == s2n(i))
+                if((int)static_cast<uint8_t>(tf_buff[tf_pos]) == s2n(i))
                     ++result;
                 ++tf_pos;
             }
@@ -98,7 +101,7 @@ bool SAD::check_one_sig(Signature &s)
             result = 0;
             for(std::string j : search_bytes)
             {
-                if(tf_buff[tf_pos + k] == s2n(j))
+                if((int)static_cast<uint8_t>(tf_buff[tf_pos + k]) == s2n(j))
                     ++result;
                 ++k;
             }
@@ -109,13 +112,13 @@ bool SAD::check_one_sig(Signature &s)
     }
     else if(s.direction == Direction::Forward)
     {
-        for(long long i = 0; i + search_bytes.size() < tf_size; ++i)
+        for(long long i = 0; tf_pos + search_bytes.size() < tf_size; ++i)
         {
             long long k = 0;
             result = 0;
             for(std::string j : search_bytes)
             {
-                if(tf_buff[tf_pos + k] == s2n(j))
+                if((int)static_cast<uint8_t>(tf_buff[tf_pos + k]) == s2n(j))
                     ++result;
                 ++k;
             }
@@ -126,13 +129,13 @@ bool SAD::check_one_sig(Signature &s)
     }
     else if(s.direction == Direction::Backward)
     {
-        for(long long i = tf_pos; i - search_bytes.size() >= 0; --i)
+        for(long long i = tf_pos; i >= 0; --i)
         {
             long long k = 0;
             result = 0;
             for(std::string j : search_bytes)
             {
-                if(tf_buff[tf_pos + k] == s2n(j))
+                if((int)static_cast<uint8_t>(tf_buff[tf_pos + k]) == s2n(j))
                     ++result;
                 ++k;
             }
@@ -143,11 +146,14 @@ bool SAD::check_one_sig(Signature &s)
     }
     bool r = false;
     if(result == search_bytes.size())
+    {
+        tf_pos += search_bytes.size();
         r = true;
+    }
     if(s.invert)
         r = !r;
     if(r == false || s.invert || s.direction == Direction::Presence)
-        tf_pos = tf_pos_old;
+        tf_pos = tf_pos_old;    
     return r;
 }
 
@@ -157,11 +163,16 @@ double SAD::check_sig()
     double prcnt{};
     for(Signature s : signatures)
     {
-        total += s.est_wght;
-        if(check_one_sig(s))
-        {
+        bool res = check_one_sig(s);
+        if(res)
+        {            
             prcnt += s.est_wght;
         }
+        total += s.est_wght;
+        if(res == false and s.optional)
+            total -= s.est_wght;
     }
+    if(total == 0)
+        return 0;
     return prcnt * 100 / total;
 }

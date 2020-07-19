@@ -1,4 +1,4 @@
-[png] <- sig name
+<png> <- sig name
 {
     0:0xff,0xde,0x02:1 <- sig exp
 }
@@ -9,9 +9,10 @@
 1) offset in file
 ! - invert result
 @ - absolute
-< - Backward
-> - Forward
+- - Backward
++ - Forward
 ? - Presence(search the entire file)
+~ - Optional(Counted if true)
 
 [offs] - get value from file for offset
 c - 1b

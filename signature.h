@@ -34,8 +34,9 @@ public:
     bool optional;
     char *target_bf;
 
-    void get_offs_type(std::string &);
     std::string pars_gen(std::string, char *);
     std::string pars_offset(std::string, char *);
+private:
+    void set_offs_type(std::string &);
 };
 #endif // SIGNATURE_H

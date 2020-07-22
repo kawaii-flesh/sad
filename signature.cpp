@@ -3,7 +3,7 @@
 Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Direction::Absolute), sig_err(Sig_errors::Good), invert(false), optional(false), target_bf(tb)
 {
     std::string est_wt;
-    get_offs_type(s[0]);
+    set_offs_type(s[0]);
     offset = s[0];
     est_wt = s[2];
     try
@@ -23,7 +23,7 @@ Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Directio
     srch_expr = s[1];
 }
 
-void Signature::get_offs_type(std::string &str)
+void Signature::set_offs_type(std::string &str)
 {
     long long p = str.find('!');
     if(p != std::string::npos)

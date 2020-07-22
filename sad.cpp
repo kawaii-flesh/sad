@@ -40,9 +40,12 @@ int SAD::get_signatures()
     std::string sf_b(sf_buff);
 
     size_t dpos = sf_b.find('<' + sig_nm + '>');
-    dpos = sf_b.find('(', dpos);
-    size_t edpos = sf_b.find(')', dpos);
-    std::string descr = sf_b.substr(dpos + 1, edpos - dpos - 1) + '\n';
+    std::string s = sf_b.substr(dpos, sf_b.find('{', dpos) - dpos - 1);
+    dpos = s.find('(');
+    size_t edpos = s.find(')', dpos);
+    std::string descr = "";
+    if(dpos != std::string::npos || edpos != std::string::npos)
+        descr = s.substr(dpos + 1, edpos - dpos - 1) + '\n';
 
     sf_b = delete_all_spaces(sf_b);
     long long cur_pos = sf_b.find('<' + sig_nm + '>');

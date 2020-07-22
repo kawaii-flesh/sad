@@ -33,6 +33,7 @@ public:
     bool invert;
     bool optional;
     char *target_bf;
+    std::string description;
 
     std::string pars_gen(std::string, char *);
     std::string pars_offset(std::string, char *);

@@ -17,6 +17,7 @@ public:
     bool check_one_sig(Signature &);
     double check_sig(); // get %    
     bool sad_error;
+    std::vector<Signature> &get_signatures_vector(){return signatures;}
 private:
     std::ifstream sig_file;
     std::ifstream tar_file;

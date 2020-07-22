@@ -15,6 +15,7 @@
 
 
 <elf>
+Extensible_Linking_Format;
 {
     0:0x7f,0x45,0x4c,0x46:1;
 }

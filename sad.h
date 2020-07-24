@@ -11,18 +11,13 @@
 class SAD
 {
 public:
-    SAD(std::string sig_fn, std::string tar_n, std::string sig);
-    ~SAD();
-    int get_signatures();
-    bool check_one_sig(Signature &);
-    double check_sig(); // get %    
+    SAD(std::string sig, long long tfs);
+    int get_signatures_param(char *sf_buff, char *tf_buff);
+    bool check_one_sig(Signature &, char *tf_buff);
+    std::pair<double, int> check_sig(char *tf_buff); // get %
     bool sad_error;
     std::vector<Signature> &get_signatures_vector(){return signatures;}
-private:
-    std::ifstream sig_file;
-    std::ifstream tar_file;
-    char *sf_buff;
-    char *tf_buff;
+private:    
     long long tf_pos;
     long long tf_pos_old;
     long long tf_size;

@@ -1,51 +1,22 @@
 #include "sad.h"
 
-SAD::SAD(std::string sig_fn, std::string tar_n, std::string sig) : sad_error(false), sf_buff(nullptr), tf_buff(nullptr), tf_pos(0), tf_pos_old(0), sig_nm(sig)
+SAD::SAD(std::string sig, long long tfs) : sad_error(false), tf_pos(0), tf_pos_old(0), tf_size(tfs), sig_nm(sig)
 {
-    sig_file.open(sig_fn, std::ios::binary);
-    if(!sig_file.is_open())
-    {
-        std::cout << "Can't open file: " << sig_fn << '\n';
-        sad_error = true;
-        return;
-    }
-    long long sf_size = sig_file.seekg(0, std::ios::end).tellg();
-    sig_file.seekg(0);
-    sf_buff = new char[sf_size+1];
-    sig_file.read(sf_buff, sf_size);
-
-    tar_file.open(tar_n);
-    if(!tar_file.is_open())
-    {
-        std::cout << "Can't open file: " << tar_n << '\n';
-        sad_error = true;
-        return;
-    }
-    tf_size = tar_file.seekg(0, std::ios::end).tellg();
-    tar_file.seekg(0);
-    tf_buff = new char[tf_size+1];
-    tar_file.read(tf_buff, tf_size);
 }
 
-SAD::~SAD()
-{
-    delete [] sf_buff;
-    delete [] tf_buff;
-    sig_file.close();
-    tar_file.close();
-}
-
-int SAD::get_signatures()
+int SAD::get_signatures_param(char *sf_buff, char *tf_buff)
 {
     std::string sf_b(sf_buff);
 
     size_t dpos = sf_b.find('<' + sig_nm + '>');
     std::string s = sf_b.substr(dpos, sf_b.find('{', dpos) - dpos - 1);
     dpos = s.find('(');
-    size_t edpos = s.find(')', dpos);
-    std::string descr = "";
-    if(dpos != std::string::npos || edpos != std::string::npos)
+    size_t edpos = s.rfind(')');
+    std::string descr = "";    
+    if(dpos != std::string::npos && edpos != std::string::npos)
+    {
         descr = s.substr(dpos + 1, edpos - dpos - 1) + '\n';
+    }
 
     sf_b = delete_all_spaces(sf_b);
     long long cur_pos = sf_b.find('<' + sig_nm + '>');
@@ -76,7 +47,7 @@ int SAD::get_signatures()
     return 0;
 }
 
-bool SAD::check_one_sig(Signature &s)
+bool SAD::check_one_sig(Signature &s, char *tf_buff)
 {
     std::vector<std::string> search_bytes;
     strip(s.srch_expr, ",", search_bytes);
@@ -166,22 +137,22 @@ bool SAD::check_one_sig(Signature &s)
     return r;
 }
 
-double SAD::check_sig()
+std::pair<double, int> SAD::check_sig(char *tf_buff)
 {
     double total{};
-    double prcnt{};
+    double result{};
     for(Signature s : signatures)
     {
-        bool res = check_one_sig(s);
+        bool res = check_one_sig(s, tf_buff);
         if(res)
         {            
-            prcnt += s.est_wght;
+            result += s.est_wght;
         }
         total += s.est_wght;
         if(res == false and s.optional)
             total -= s.est_wght;
     }
     if(total == 0)
-        return 0;
-    return prcnt * 100 / total;
+        return std::make_pair(0, 0);
+    return std::make_pair(result * 100 / total, result);
 }

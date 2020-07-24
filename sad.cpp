@@ -9,6 +9,7 @@ int SAD::get_signatures_param(char *sf_buff, char *tf_buff)
     std::string sf_b(sf_buff);
 
     size_t dpos = sf_b.find('<' + sig_nm + '>');
+    dpos += 2 + sig_nm.size();
     if(dpos == std::string::npos)
     {
         std::cout << "Can't find sig container: " << sig_nm << "!\n";

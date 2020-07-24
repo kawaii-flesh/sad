@@ -1,6 +1,6 @@
 #include "signature.h"
 
-Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Direction::Absolute), sig_err(Sig_errors::Good), invert(false), optional(false), target_bf(tb)
+Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Direction::Absolute), invert(false), optional(false), target_bf(tb), sig_err(Sig_errors::Good)
 {
     std::string est_wt;
     set_offs_type(s[0]);
@@ -12,15 +12,28 @@ Signature::Signature(std::vector<std::string> &s, char *tb) : direction(Directio
     }
     catch(std::invalid_argument)
     {
-        std::cout << "Estimated weight in signature wrong!\n";
         sig_err = Sig_errors::Estw;
     }
     catch(std::out_of_range)
-    {
-        std::cout << "Estimated weight in signature wrong!\n";
+    {        
         sig_err = Sig_errors::Estw;
     }
     srch_expr = s[1];
+}
+
+bool Signature::valid()
+{
+    if(sig_err == Sig_errors::Estw)
+    {
+        std::cout << "Estimated weight in signature wrong!\n";
+        return false;
+    }
+    if(sig_err == Sig_errors::Offset)
+    {
+        std::cout << "Offset in signature wrong!\n";
+        return false;
+    }
+    return true;
 }
 
 void Signature::set_offs_type(std::string &str)

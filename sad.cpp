@@ -9,6 +9,11 @@ int SAD::get_signatures_param(char *sf_buff, char *tf_buff)
     std::string sf_b(sf_buff);
 
     size_t dpos = sf_b.find('<' + sig_nm + '>');
+    if(dpos == std::string::npos)
+    {
+        std::cout << "Can't find sig container: " << sig_nm << "!\n";
+        return -1;
+    }
     std::string s = sf_b.substr(dpos, sf_b.find('{', dpos) - dpos - 1);
     dpos = s.find('(');
     size_t edpos = s.rfind(')');
@@ -20,11 +25,6 @@ int SAD::get_signatures_param(char *sf_buff, char *tf_buff)
 
     sf_b = delete_all_spaces(sf_b);
     long long cur_pos = sf_b.find('<' + sig_nm + '>');
-    if(sf_b.find('<' + sig_nm + '>') == std::string::npos)
-    {
-        std::cout << "Can't find sig container: " << sig_nm << "!\n";
-        return -1;
-    }
     cur_pos = sf_b.find('{', cur_pos) + 1; // skip sig name and {
     for(; sf_b[cur_pos] != '}'; ++cur_pos)
     {
@@ -42,7 +42,8 @@ int SAD::get_signatures_param(char *sf_buff, char *tf_buff)
         strip(sb, ":", svb);
         Signature sig(svb, tf_buff);
         sig.description = descr;
-        signatures.push_back(sig);
+        if(sig.valid() == true)
+            signatures.push_back(sig);
     }
     return 0;
 }

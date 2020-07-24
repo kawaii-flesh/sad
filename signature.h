@@ -29,15 +29,16 @@ public:
     std::string srch_expr;
     int est_wght;
     Direction direction;
-    Sig_errors sig_err;
     bool invert;
     bool optional;
     char *target_bf;
     std::string description;
+    bool valid();
 
     std::string pars_gen(std::string, char *);
     std::string pars_offset(std::string, char *);
 private:
+    Sig_errors sig_err;
     void set_offs_type(std::string &);
 };
 #endif // SIGNATURE_H

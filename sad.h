@@ -16,7 +16,7 @@ public:
     bool check_one_sig(Signature &, char *tf_buff);
     std::pair<double, int> check_sig(char *tf_buff); // get %
     bool sad_error;
-    std::vector<Signature> &get_signatures_vector(){return signatures;}
+    std::vector<Signature> &get_signatures_vector(){return signatures;}    
 private:    
     long long tf_pos;
     long long tf_pos_old;

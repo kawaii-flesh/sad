@@ -176,7 +176,7 @@ std::string Signature::pars_gen(std::string str, char *tb)
     return str;
 }
 
-std::string Signature::pars_offset(std::string str, char *tb)
+std::string Signature::pars_offset(const std::string &str, char *tb)
 {    
     if(direction != Direction::Absolute)
     {

@@ -1,6 +1,6 @@
 #include "sad.h"
 
-SAD::SAD(std::string sig, long long tfs) : sad_error(false), tf_pos(0), tf_pos_old(0), tf_size(tfs), sig_nm(sig)
+SAD::SAD(const std::string &sig, long long tfs) : sad_error(false), tf_pos(0), tf_pos_old(0), tf_size(tfs), sig_nm(sig)
 {
 }
 
